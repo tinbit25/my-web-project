@@ -56,7 +56,7 @@ function Footer() {
         <a href="#" className="text-white hover:text-orange-500"><i className="fab fa-twitter"></i></a>
         <a href="#" className="text-white hover:text-orange-500"><i className="fab fa-instagram"></i></a>
       </div>
-      <p className="text-center mt-6">© 2024 Your Organization</p>
+      <p className="text-center mt-6">© 2024 Gbi Gubae</p>
     </footer>
   );
 }
