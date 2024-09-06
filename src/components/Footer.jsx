@@ -51,7 +51,7 @@ function Footer() {
         </div>
       </div>
       <div className="mt-8 flex justify-center space-x-4">
-        {/* Example social icons */}
+       
         <a href="#" className="text-white hover:text-orange-500"><i className="fab fa-facebook-f"></i></a>
         <a href="#" className="text-white hover:text-orange-500"><i className="fab fa-twitter"></i></a>
         <a href="#" className="text-white hover:text-orange-500"><i className="fab fa-instagram"></i></a>

@@ -33,7 +33,6 @@ const Navbar = () => {
         </ul>
       </div>
 
-      {/* Small screen menu button */}
       <div className="lg:hidden flex justify-end p-5">
         <button onClick={toggleMenu} className="menu-btn">
           <FontAwesomeIcon icon={faBars} size="2x" className="text-white" />

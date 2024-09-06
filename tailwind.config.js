@@ -14,6 +14,7 @@ export default {
     'custom-purple': 'rgb(115, 75, 159)',
     'custom-orange': '#ff7200',
   },
+  
   opacity: {
     '70': '0.7',
   },
