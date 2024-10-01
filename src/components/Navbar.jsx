@@ -12,23 +12,23 @@ const Navbar = () => {
 
   return (
     <nav className="relative">
-      {/* Large screen menu */}
+      
       <div className="hidden lg:flex justify-center items-center space-x-6  p-5">
         <ul className="flex space-x-6">
           <li>
             <a href="#home" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">HOME</a>
           </li>
           <li>
-            <a href="#courses" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">COURSES</a>
+            <a href="#courses" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">ኮርስ </a>
           </li>
           <li>
-            <a href="#calendar" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">CALENDAR</a>
+            <a href="#calendar" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">ካሌንደር</a>
           </li>
           <li>
-            <a href="#student-portal" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">STUDENT PORTAL</a>
+            <a href="#student-portal" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">የተማሪ ፖርታል</a>
           </li>
           <li>
-            <a href="#contact" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">CONTACT</a>
+            <a href="#contact" className="text-white font-bold border border-white rounded py-2 px-3 hover:bg-custom-purple transition-colors duration-300">ስለ እኛ</a>
           </li>
         </ul>
       </div>
