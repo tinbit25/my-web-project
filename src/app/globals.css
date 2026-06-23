@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Roboto', 'Segoe UI', 'Tahoma', 'Geneva', 'Verdana', sans-serif;
+  --color-custom-purple: rgb(115, 75, 159);
+  --color-custom-orange: #ff7200;
+  --color-gray-750: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-850: #18212f;
+  --color-gray-900: #111827;
+  --color-gray-950: #090e18;
+  --animate-fade-in: fadeIn 0.2s ease-out;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-gray-950);
+  color: #f3f4f6;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* Dark themed scrollbar for portal sidebar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff7200;
+}
+
+/* Certificate print styles */
+@media print {
+  body > *:not(.print-certificate) {
+    display: none !important;
+  }
+}
