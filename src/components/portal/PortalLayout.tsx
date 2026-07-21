@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faGraduationCap,
@@ -67,6 +68,7 @@ interface PortalLayoutProps {
 
 export default function PortalLayout({ initialRole = 'student' }: PortalLayoutProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [activeRole, setActiveRole] = useState(initialRole);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -79,6 +81,16 @@ export default function PortalLayout({ initialRole = 'student' }: PortalLayoutPr
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, unread: false })));
   };
+
+  // Sync role from URL query param (e.g. /dashboard?role=teacher after login)
+  useEffect(() => {
+    const roleParam = searchParams.get('role');
+    const validRoles = ['student', 'teacher', 'admin', 'superadmin', 'parent'];
+    if (roleParam && validRoles.includes(roleParam)) {
+      setActiveRole(roleParam);
+      setActiveTab('dashboard');
+    }
+  }, [searchParams]);
 
   const unreadCount = notifications.filter(n => n.unread).length;
 

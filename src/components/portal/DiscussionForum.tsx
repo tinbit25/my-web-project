@@ -89,49 +89,92 @@ export default function DiscussionForum({ role }: DiscussionForumProps) {
 
   const [replyText, setReplyText] = useState('');
 
-  const handleCreateThread = (e: React.FormEvent) => {
+  // Fetch live threads from backend and connect to real-time SSE stream
+  React.useEffect(() => {
+    fetch('/api/forum')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.posts) && data.posts.length > 0) {
+          setThreads(data.posts);
+        }
+      })
+      .catch(() => {});
+
+    // SSE Real-time Listener
+    const eventSource = new EventSource('/api/realtime');
+    eventSource.onmessage = (event) => {
+      try {
+        const { type, payload } = JSON.parse(event.data);
+        if (type === 'FORUM_POST_CREATED') {
+          setThreads(prev => [payload, ...prev]);
+        } else if (type === 'FORUM_REPLY_ADDED') {
+          setThreads(prev =>
+            prev.map(t => (t.id === payload.postId || (t as any)._id === payload.postId ? { ...t, replies: [...t.replies, payload.reply] } : t))
+          );
+        } else if (type === 'FORUM_POST_LIKED') {
+          setThreads(prev =>
+            prev.map(t => (t.id === payload.postId || (t as any)._id === payload.postId ? { ...t, likes: payload.likes } : t))
+          );
+        }
+      } catch (e) {}
+    };
+
+    return () => eventSource.close();
+  }, []);
+
+  const handleCreateThread = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newContent.trim()) return;
 
-    const newThread: Thread = {
-      id: threads.length + 1,
+    const payload = {
       title: newTitle,
       category: newCategory,
-      author: role === 'teacher' ? 'Deacon Yohannes' : 'Tinbit Elias',
+      authorName: role === 'teacher' ? 'Deacon Yohannes' : 'Tinbit Elias',
       authorRole: role,
-      date: 'Just now',
       content: newContent,
-      replies: [],
     };
 
-    setThreads([newThread, ...threads]);
+    try {
+      const res = await fetch('/api/forum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success && data.post) {
+        setThreads(prev => [data.post, ...prev]);
+      }
+    } catch (e) {}
+
     setNewTitle('');
     setNewContent('');
     setShowCreateForm(false);
   };
 
-  const handlePostReply = (e: React.FormEvent) => {
+  const handlePostReply = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!replyText.trim() || !activeThread) return;
 
-    const newReply: Reply = {
-      id: activeThread.replies.length + 1,
-      author: role === 'teacher' ? 'Deacon Yohannes' : 'Tinbit Elias',
+    const payload = {
+      action: 'reply',
+      postId: (activeThread as any)._id || activeThread.id,
+      replyText,
+      authorName: role === 'teacher' ? 'Deacon Yohannes' : 'Tinbit Elias',
       authorRole: role,
-      content: replyText,
-      date: 'Just now',
-      verified: role === 'teacher',
     };
 
-    const updatedThreads = threads.map(t => {
-      if (t.id === activeThread.id) {
-        return { ...t, replies: [...t.replies, newReply] };
+    try {
+      const res = await fetch('/api/forum', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success && data.post) {
+        setActiveThread(data.post);
       }
-      return t;
-    });
+    } catch (e) {}
 
-    setThreads(updatedThreads);
-    setActiveThread({ ...activeThread, replies: [...activeThread.replies, newReply] });
     setReplyText('');
   };
 

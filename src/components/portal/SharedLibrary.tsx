@@ -97,8 +97,57 @@ export default function SharedLibrary() {
   const grades = ['All', 'Grade 5', 'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 12'];
   const categories = ['All', 'Theology', 'Church History', 'Liturgy', 'Scriptures'];
 
+  const [resources, setResources] = useState<LibraryResource[]>(LIBRARY_RESOURCES);
+
+  // Fetch live library resources and connect to SSE realtime
+  React.useEffect(() => {
+    fetch('/api/library')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.pdfs) && data.pdfs.length > 0) {
+          const mapped = data.pdfs.map((p: any) => ({
+            id: p._id || p.id,
+            title: p.title,
+            amharic: p.amharicTitle || p.title,
+            grade: `Grade ${p.gradeNumber || 7}`,
+            category: p.category || 'Theology',
+            type: 'pdf',
+            file: p.url || '/documents/sample.pdf',
+            tags: p.tags || ['EOTC'],
+            author: p.authorName || 'Teacher',
+          }));
+          setResources(mapped);
+        }
+      })
+      .catch(() => {});
+
+    // SSE Realtime Listener
+    const eventSource = new EventSource('/api/realtime');
+    eventSource.onmessage = (event) => {
+      try {
+        const { type, payload } = JSON.parse(event.data);
+        if (type === 'PDF_UPLOADED') {
+          const mappedItem = {
+            id: payload._id || payload.id,
+            title: payload.title,
+            amharic: payload.amharicTitle || payload.title,
+            grade: `Grade ${payload.gradeNumber || 7}`,
+            category: payload.category || 'Theology',
+            type: 'pdf',
+            file: payload.url || '/documents/sample.pdf',
+            tags: payload.tags || ['EOTC'],
+            author: payload.authorName || 'Teacher',
+          };
+          setResources(prev => [mappedItem, ...prev]);
+        }
+      } catch (e) {}
+    };
+
+    return () => eventSource.close();
+  }, []);
+
   const filtered = useMemo(() => {
-    return LIBRARY_RESOURCES.filter(r => {
+    return resources.filter(r => {
       const q = search.trim().toLowerCase();
       const matchesSearch =
         !q ||
@@ -112,7 +161,7 @@ export default function SharedLibrary() {
 
       return matchesSearch && matchesGrade && matchesCategory;
     });
-  }, [search, selectedGrade, selectedCategory]);
+  }, [search, selectedGrade, selectedCategory, resources]);
 
   return (
     <div className="space-y-6">

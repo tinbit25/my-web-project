@@ -16,6 +16,7 @@ import {
   faArrowRight,
   faTimes,
 } from '@fortawesome/free-solid-svg-icons';
+import RegisterModal from '@/components/auth/RegisterModal';
 
 const ROLES = [
   {
@@ -83,6 +84,7 @@ const ROLES = [
 export default function LoginForm() {
   const router = useRouter();
   const [step, setStep] = useState<'role' | 'credentials'>('role');
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -120,14 +122,8 @@ export default function LoginForm() {
         setError('Invalid email or password. Please try again.');
         setLoading(false);
       } else {
-        // Successful login, redirect based on role
-        let dashboardUrl = '/dashboard/student';
-        if (selectedRole.id === 'superadmin') dashboardUrl = '/dashboard/super-admin';
-        else if (selectedRole.id === 'admin') dashboardUrl = '/dashboard/admin';
-        else if (selectedRole.id === 'teacher') dashboardUrl = '/dashboard/teacher';
-        else if (selectedRole.id === 'parent') dashboardUrl = '/dashboard/parent';
-
-        router.push(dashboardUrl);
+        // All roles share the same /dashboard page; role param initialises the correct view
+        router.push(`/dashboard?role=${selectedRole.id}`);
         router.refresh();
       }
     } catch (err) {
@@ -285,12 +281,28 @@ export default function LoginForm() {
             </div>
           )}
 
-          {/* Footer note */}
-          <p className="text-center text-[10px] text-gray-600 mt-8">
-            Ethiopian Orthodox Tewahedo Church — Debre Berhan Sunday School Portal · 2026
-          </p>
+          {/* Footer note & Register trigger */}
+          <div className="text-center mt-8 space-y-2">
+            <p className="text-xs text-gray-400">
+              Don&apos;t have an account?{' '}
+              <button
+                type="button"
+                onClick={() => setShowRegisterModal(true)}
+                className="text-orange-400 font-bold hover:underline cursor-pointer"
+              >
+                Register New Account
+              </button>
+            </p>
+            <p className="text-[10px] text-gray-600">
+              Ethiopian Orthodox Tewahedo Church — Debre Berhan Sunday School Portal · 2026
+            </p>
+          </div>
         </div>
       </div>
+
+      {showRegisterModal && (
+        <RegisterModal onClose={() => setShowRegisterModal(false)} />
+      )}
     </div>
   );
 }

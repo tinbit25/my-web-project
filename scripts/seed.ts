@@ -1,9 +1,11 @@
 // scripts/seed.ts
+import { loadEnvConfig } from '@next/env';
+loadEnvConfig(process.cwd());
+
 import bcrypt from 'bcryptjs';
 import { dbConnect } from '../src/lib/mongoose';
 import User from '../src/models/User';
 import Church from '../src/models/Church';
-
 
 async function createDemoData() {
   await dbConnect();

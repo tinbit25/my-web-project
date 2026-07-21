@@ -1,19 +1,29 @@
-// src/models/student.ts
-import { Schema, model, Types } from 'mongoose';
-import { IStudent } from './interfaces';
+// src/models/Student.ts
+import mongoose, { Schema } from 'mongoose';
+import { IStudentProfile } from './interfaces';
 
-const StudentSchema = new Schema<IStudent>(
+export interface IStudentDocument extends IStudentProfile, mongoose.Document {
+  user: mongoose.Types.ObjectId;
+}
+
+const StudentSchema = new Schema<IStudentDocument>(
   {
-    user: { type: Types.ObjectId, ref: 'User', required: true, unique: true },
-    grade: { type: Types.ObjectId, ref: 'Grade', required: true },
-    parent: { type: Types.ObjectId, ref: 'Parent', required: true },
-    enrolledCourses: [{ type: Types.ObjectId, ref: 'Course' }],
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+    amharicName: { type: String },
+    gender: { type: String },
+    dob: { type: Date },
+    phone: { type: String },
+    parentName: { type: String },
+    parentPhone: { type: String },
+    gradeNumber: { type: Number, required: true },
+    address: { type: String },
+    baptismName: { type: String },
+    profilePhoto: { type: String },
+    enrolledCourses: [{ type: Schema.Types.ObjectId, ref: 'Course' }],
+    parentUser: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   { timestamps: true }
 );
 
-StudentSchema.index({ user: 1 });
-StudentSchema.index({ parent: 1 });
-StudentSchema.index({ grade: 1 });
-
-export const Student = model<IStudent>('Student', StudentSchema);
+export const Student = mongoose.models.Student || mongoose.model<IStudentDocument>('Student', StudentSchema);
+export default Student;

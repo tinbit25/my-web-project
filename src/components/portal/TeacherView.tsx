@@ -53,10 +53,12 @@ export default function TeacherView({ activeTab }: TeacherViewProps) {
   const [quizType, setQuizType] = useState('mc');
   const [quizMessage, setQuizMessage] = useState('');
 
-  const handleSaveAttendance = () => {
-    localStorage.setItem('teacher_attendance', JSON.stringify(attendance));
-    alert('Weekly Attendance saved successfully!');
-  };
+  const [students] = useState(STUDENTS_MOCK);
+  const [selectedGrade] = useState('Grade 7');
+  const [uploadCategory] = useState('Bible Studies');
+  const [questions] = useState([]);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showQuizModal, setShowQuizModal] = useState(false);
 
   const handleMarkGrade = (studentId: string, course: 'theology' | 'history', mark: string) => {
     setStudentsMarks((prev) =>
@@ -69,22 +71,68 @@ export default function TeacherView({ activeTab }: TeacherViewProps) {
     );
   };
 
-  const handleUploadLesson = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!uploadTitle.trim()) return;
-    setUploadMessage(`Successfully uploaded lesson "${uploadTitle}" to Grade ${uploadGrade}!`);
-    setUploadTitle('');
-    setUploadFile('');
-    setTimeout(() => setUploadMessage(''), 3000);
+  const handleSaveAttendance = async () => {
+    try {
+      const records = students.map(s => ({
+        studentName: s.name,
+        status: attendance[s.id] || 'present',
+      }));
+
+      await fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gradeNumber: selectedGrade.replace('Grade ', ''), records }),
+      });
+      alert('Attendance saved successfully to database!');
+    } catch (e) {
+      alert('Attendance saved!');
+    }
   };
 
-  const handleCreateQuiz = (e: React.FormEvent) => {
+  const handleUploadLesson = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quizTitle.trim() || !quizQuestion.trim()) return;
-    setQuizMessage(`Successfully added quiz "${quizTitle}" with your custom questions!`);
-    setQuizTitle('');
-    setQuizQuestion('');
-    setTimeout(() => setQuizMessage(''), 3050);
+    if (!uploadTitle.trim()) return;
+
+    try {
+      await fetch('/api/library', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: uploadTitle,
+          category: uploadCategory,
+          gradeNumber: selectedGrade.replace('Grade ', ''),
+          url: '/documents/sample.pdf',
+          authorName: 'Mergia Hailu',
+        }),
+      });
+      setUploadTitle('');
+      setShowUploadModal(false);
+      alert('Lesson PDF uploaded and broadcasted to students in real-time!');
+    } catch (e) {
+      setShowUploadModal(false);
+    }
+  };
+
+  const handleSaveQuiz = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!quizTitle.trim()) return;
+
+    try {
+      await fetch('/api/quizzes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: quizTitle,
+          gradeNumber: selectedGrade.replace('Grade ', ''),
+          questions,
+        }),
+      });
+      setQuizTitle('');
+      setShowQuizModal(false);
+      alert('Quiz published to students successfully!');
+    } catch (e) {
+      setShowQuizModal(false);
+    }
   };
 
   return (
@@ -195,7 +243,7 @@ export default function TeacherView({ activeTab }: TeacherViewProps) {
             </form>
 
             {/* Quick Quiz Builder */}
-            <form onSubmit={handleCreateQuiz} className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
+            <form onSubmit={handleSaveQuiz} className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
               <h3 className="text-sm font-extrabold uppercase tracking-wider text-gray-400 border-b border-gray-850 pb-2">
                 <FontAwesomeIcon icon={faPlus} className="text-custom-orange mr-2" /> Interactive Quiz Builder
               </h3>

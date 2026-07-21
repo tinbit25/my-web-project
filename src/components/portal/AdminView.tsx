@@ -48,6 +48,30 @@ export default function AdminView({ activeTab, setActiveTab }: AdminViewProps) {
 
   const [newAnnTitle, setNewAnnTitle] = useState('');
   const [newAnnText, setNewAnnText] = useState('');
+  const [pendingUsers, setPendingUsers] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetch('/api/users/approve?pending=true')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.users)) {
+          setPendingUsers(data.users);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleApproveUser = async (userId: string) => {
+    try {
+      await fetch('/api/users/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: 'approve' }),
+      });
+      setPendingUsers(prev => prev.filter(u => u._id !== userId));
+      alert('Account approved successfully!');
+    } catch (e) {}
+  };
 
   const handleAddTeacher = (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,16 +145,42 @@ export default function AdminView({ activeTab, setActiveTab }: AdminViewProps) {
               </div>
             </div>
 
-            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400 shadow-inner">
+            <div className="bg-gray-900 border border-orange-500/30 rounded-2xl p-5 flex items-center gap-4">
+              <div className="w-11 h-11 rounded-xl bg-orange-500/20 flex items-center justify-center text-orange-400 shadow-inner">
                 <FontAwesomeIcon icon={faBell} />
               </div>
               <div>
-                <h3 className="text-xl font-bold text-white">{announcements.length}</h3>
-                <p className="text-[10px] text-gray-400 mt-0.5">Announcements</p>
+                <h3 className="text-xl font-bold text-white">{pendingUsers.length}</h3>
+                <p className="text-[10px] text-orange-400 font-bold mt-0.5">Pending Approvals</p>
               </div>
             </div>
           </div>
+
+          {/* Pending Registrations Roster */}
+          {pendingUsers.length > 0 && (
+            <div className="bg-gray-900 border border-orange-500/20 rounded-2xl p-6 space-y-4">
+              <h3 className="text-white font-bold text-base flex items-center gap-2">
+                <FontAwesomeIcon icon={faUserTie} className="text-custom-orange" />
+                Pending Account Approvals ({pendingUsers.length})
+              </h3>
+              <div className="space-y-2">
+                {pendingUsers.map(u => (
+                  <div key={u._id} className="bg-gray-950 p-4 rounded-xl border border-gray-800 flex items-center justify-between">
+                    <div>
+                      <p className="text-white font-bold text-xs">{u.firstName} {u.lastName} ({u.role})</p>
+                      <p className="text-[10px] text-gray-400">{u.email} · Registered {new Date(u.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <button
+                      onClick={() => handleApproveUser(u._id)}
+                      className="px-4 py-1.5 bg-custom-orange hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition-all cursor-pointer"
+                    >
+                      Approve Account
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-2xl p-6 flex flex-col justify-between min-h-[250px]">

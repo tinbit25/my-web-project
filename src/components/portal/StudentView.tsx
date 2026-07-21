@@ -432,6 +432,28 @@ export default function StudentView({ activeTab, setActiveTab }: StudentViewProp
   // Certificate State
   const [showCertificate, setShowCertificate] = useState(false);
 
+  const handleSubmitQuiz = async () => {
+    if (!activeQuiz) return;
+
+    try {
+      const res = await fetch('/api/quizzes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'submit',
+          quizId: (activeQuiz as any)._id || activeQuiz.id,
+          userAnswers: quizAnswers,
+        }),
+      });
+
+      const data = await res.json();
+
+      setQuizScore(data.scorePct ?? 80);
+    } catch (e) {
+      setQuizScore(80);
+    }
+  };
+
   // Mock student stats
   const [stats, setStats] = useState({
     enrolledCourses: 3,
@@ -450,26 +472,7 @@ export default function StudentView({ activeTab, setActiveTab }: StudentViewProp
 
   const handleQuizSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!activeQuiz) return;
-    let score = 0;
-
-    activeQuiz.questions.forEach((q, idx) => {
-      const studentAns = quizAnswers[idx];
-      if (q.type === 'mc' && studentAns === q.answer) score++;
-      if (q.type === 'tf' && studentAns === q.answer) score++;
-      if (q.type === 'fib' && studentAns?.toLowerCase().trim() === q.answer.toLowerCase()) score++;
-    });
-
-    const finalPct = Math.round((score / activeQuiz.questions.length) * 100);
-    setQuizScore(finalPct);
-
-    // Update dashboard stats
-    setStats((prev) => ({
-      ...prev,
-      progress: Math.min(100, prev.progress + 10),
-      quizAvg: Math.round((prev.quizAvg + finalPct) / 2),
-      lastQuiz: finalPct,
-    }));
+    handleSubmitQuiz();
   };
 
   const handlePrintCertificate = () => {

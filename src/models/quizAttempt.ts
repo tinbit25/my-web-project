@@ -20,3 +20,4 @@ const QuizAttemptSchema = new Schema<IQuizAttempt>({
 QuizAttemptSchema.index({ quiz: 1, student: 1 });
 
 export const QuizAttempt = model<IQuizAttempt>('QuizAttempt', QuizAttemptSchema);
+export default QuizAttempt;

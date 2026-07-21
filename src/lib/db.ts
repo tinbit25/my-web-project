@@ -28,7 +28,7 @@ async function dbConnect() {
       // You can add additional Mongoose options here
     };
 
-    cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => mongoose);
+    cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => mongoose);
   }
   try {
     cached.conn = await cached.promise;

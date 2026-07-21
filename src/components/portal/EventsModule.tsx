@@ -111,15 +111,85 @@ export default function EventsModule() {
   const [regDone, setRegDone] = useState(false);
   const [events, setEvents] = useState<Event[]>(EVENTS);
 
-  const categories = ['All', ...Array.from(new Set(EVENTS.map(e => e.category)))];
+  // Fetch live events from API and connect to SSE realtime
+  React.useEffect(() => {
+    fetch('/api/events')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && Array.isArray(data.events) && data.events.length > 0) {
+          const mapped = data.events.map((e: any) => ({
+            id: e._id || e.id,
+            title: e.title,
+            amharic: e.amharicTitle || e.title,
+            category: e.category || 'Retreat',
+            date: e.dateString || 'Upcoming',
+            location: e.location || 'Church Main Compound',
+            capacity: e.capacity || 100,
+            registered: e.registeredUsers ? e.registeredUsers.length : 0,
+            description: e.description || '',
+            color: e.color || 'orange',
+          }));
+          setEvents(mapped);
+        }
+      })
+      .catch(() => {});
+
+    // SSE Realtime Listener
+    const eventSource = new EventSource('/api/realtime');
+    eventSource.onmessage = (event) => {
+      try {
+        const { type, payload } = JSON.parse(event.data);
+        if (type === 'EVENT_CREATED') {
+          const mappedItem = {
+            id: payload._id || payload.id,
+            title: payload.title,
+            amharic: payload.amharicTitle || payload.title,
+            category: payload.category || 'Retreat',
+            date: payload.dateString || 'Upcoming',
+            location: payload.location || 'Church Main Compound',
+            capacity: payload.capacity || 100,
+            registered: payload.registeredUsers ? payload.registeredUsers.length : 0,
+            description: payload.description || '',
+            color: payload.color || 'orange',
+          };
+          setEvents(prev => [mappedItem, ...prev]);
+        } else if (type === 'EVENT_REGISTERED') {
+          setEvents(prev =>
+            prev.map(ev =>
+              ev.id === payload.eventId || (ev as any)._id === payload.eventId
+                ? { ...ev, registered: payload.registeredCount }
+                : ev
+            )
+          );
+        }
+      } catch (e) {}
+    };
+
+    return () => eventSource.close();
+  }, []);
+
+  const categories = ['All', ...Array.from(new Set(events.map(e => e.category)))];
   const filtered = filter === 'All' ? events : events.filter(e => e.category === filter);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!regName.trim()) return;
+    if (!regName.trim() || !registering) return;
+
+    try {
+      await fetch('/api/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'register',
+          eventId: (registering as any)._id || registering.id,
+          fullName: regName,
+          gradeNumber: regGrade.replace('Grade ', ''),
+        }),
+      });
+    } catch (err) {}
 
     setEvents(prev =>
-      prev.map(ev => ev.id === registering!.id ? { ...ev, registered: ev.registered + 1 } : ev)
+      prev.map(ev => (ev.id === registering.id ? { ...ev, registered: ev.registered + 1 } : ev))
     );
     setRegDone(true);
   };
