@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import PortalLayout from '@/components/portal/PortalLayout';
 import { Metadata } from 'next';
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function DashboardPage() {
-  return <PortalLayout />;
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-950 flex items-center justify-center text-white">Loading Portal...</div>}>
+      <PortalLayout />
+    </Suspense>
+  );
 }

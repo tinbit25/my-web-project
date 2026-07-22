@@ -10,8 +10,12 @@ export interface IChurch extends Document {
   code: string;
   address?: string;
   city?: string;
+  state?: string;
+  zip?: string;
   phone?: string;
+  email?: string;
   contactEmail?: string;
+  logoUrl?: string;
   settings?: {
     theme?: string;
     timezone?: string;
@@ -20,6 +24,11 @@ export interface IChurch extends Document {
   isActive?: boolean;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IGrade extends Document {
+  name: string;
+  order: number;
 }
 
 export interface IUser extends Document {
@@ -168,10 +177,17 @@ export interface IQuiz extends Document {
 export interface IQuizAttempt extends Document {
   quiz: Types.ObjectId;
   student: Types.ObjectId;
+  answers?: {
+    question?: Types.ObjectId;
+    selectedOptionIndex?: number;
+    isCorrect?: boolean;
+  }[];
   score: number;
-  totalQuestions: number;
-  passed: boolean;
-  completedAt: Date;
+  totalQuestions?: number;
+  passed?: boolean;
+  startedAt?: Date;
+  finishedAt?: Date;
+  completedAt?: Date;
 }
 
 export interface IAttendanceRecord {
